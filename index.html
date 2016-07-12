@@ -41,6 +41,8 @@
                 $('#investPropCount').change(function() {$(document).ready(function() {
                     /*
                       This needs to be modified such that if you lower the number and then raise it again, data entered in a higher-numbered row is retained.  For example, if a borrower indicates there will be 4 guarantors, fills out the data, and then accidentally reduces the number, that filled-out data should remain.  This quick prototype version does not do that.
+                      
+                      The same fucntionality should apply to all lists of this nature in the web form.
                     */
                     var n = $('#investPropCount').val();
                     $("#a").text(n);
@@ -54,6 +56,22 @@
                             $("#investPropList tbody").append("<tr class='addedInvestProp'><td>"+i+"</td><td><select id='investPropType"+i+"'><option disabled selected>Choose…</option><option>Single-family home</option><option>Multi-family</option><option>Mixed-use property</option><option>Retail</option><option>Office</option><option>Industrial</option><option>Land</option><option>Other</option></select></td><td><input id='investPropValue"+i+"' type='number'></td><td><input id='investPropDebt"+i+"' type='number'></td><td><input id='investPropEquity"+i+"' type='number' readonly></td></tr>");
                             /* 
                                 Make it so that investProperEquityN = investPropValueN - investPropDebtN
+                                
+                                Include a total row at the bottom if more than one row.
+                                
+                                If there are 10 or fewer properties, have rows for each property.
+                                If there are 10 or more properties, and it should look like this:
+                                
+   A                           B                   C                   D            E
+                              ---------------------------------------------------------------------
+1                             | No. of Properties | Total As-Is Value | Total Debt | Total Equity |
+  -------------------------------------------------------------------------------------------------
+2 | Free-and-Clear Properties |                   |                   |         $0 |          =C2 |
+  ------------------------------------------------------------------------------------------------
+3 |     Encumbered Properties |                   |                   |            |       =C3-D3 |
+  -------------------------------------------------------------------------------------------------
+4 |                     TOTAL |            =B2+B3 |            =C2+C3 |     =D2+D3 |       =E2+E3 |
+  -------------------------------------------------------------------------------------------------
                             */
                             i++;
                         } while (i <= n)
@@ -272,6 +290,12 @@
             </div>
             <div>
                 <h1>Borrower</h1>
+                <!--
+                    We need to implement a net worth and net income calculation as per the old prelim app.
+                    Assets - Liabilities = Net Worth
+                    Income - Expenses = Net Income
+                    See barnettcapital.com/prelim as of July 2016
+                -->
                 <input id="borrowerFirstName" type="text" placeholder="First name">
                 <input id="borrowerLastName" type="text" placeholder="Last name">
                 <input id="borrowerEmail" type="email" placeholder="Email">
@@ -385,6 +409,11 @@
             </div>
             <div>
                 <h1>Property</h1>
+                <!--
+                    The property section should be modified to allow for more than one specific property.
+                    This covers the case of a borrower tackling multiple deals at once
+                    or multiple collateral properties.
+                -->
                 <div>
                     <div>
                         <span class="borrower">Do you</span><span class="broker">Does the borrower</span> already own the investment property <span class="borrower">you are</span><span class="broker">the borrower is</span> seeking financing for? 
