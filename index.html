@@ -1,0 +1,644 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            .broker, #draws, #timeline, .hidden, .felony {display: none;}
+            h1 {
+                font-size: 30px;
+                margin:0;
+                padding:0;
+                padding-top: 0.5em;
+            }
+        </style>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+        <script>
+            $(document).ready(function(){
+                // Show/hide elements depending on whether filled out by borrower or broker
+                $("input[value='Borrower']").on("change", function() {
+                    $(".broker").hide(500);
+                    $(".borrower").show(500);
+                });
+                $("input[value='Broker']").on("change", function() {
+                    $(".borrower").hide(500);
+                    $(".broker").show(500);
+                });
+                
+                // Synch borrower's contact info with the first guarantor
+                $("#borrowerFirstName").on('change', function(){
+                    $("#guarantorFirstName1").text($(this).val());
+                });
+                $("#borrowerLastName").on('change', function(){
+                    $("#guarantorLastName1").text($(this).val());
+                });
+                $("#borrowerEmail").on('change', function(){
+                    $("#guarantorEmail1").text($(this).val());
+                });
+                $("#borrowerPhoneNumber").on('change', function(){
+                    $("#guarantorPhoneNumber1").text($(this).val());
+                });
+                
+                // Show/hide investment property lit if there is more than 0 investment properties owned
+                $('#investPropCount').change(function() {$(document).ready(function() {
+                    /*
+                      This needs to be modified such that if you lower the number and then raise it again, data entered in a higher-numbered row is retained.  For example, if a borrower indicates there will be 4 guarantors, fills out the data, and then accidentally reduces the number, that filled-out data should remain.  This quick prototype version does not do that.
+                    */
+                    var n = $('#investPropCount').val();
+                    $("#a").text(n);
+                    if (n < 1) {
+                        $("#investPropList").hide();
+                        $(".addedInvestProp").remove();
+                    } else {
+                        $(".addedInvestProp").remove();
+                        var i = 1;
+                        do {
+                            $("#investPropList tbody").append("<tr class='addedInvestProp'><td>"+i+"</td><td><select id='investPropType"+i+"'><option disabled selected>Choose…</option><option>Single-family home</option><option>Multi-family</option><option>Mixed-use property</option><option>Retail</option><option>Office</option><option>Industrial</option><option>Land</option><option>Other</option></select></td><td><input id='investPropValue"+i+"' type='number'></td><td><input id='investPropDebt"+i+"' type='number'></td><td><input id='investPropEquity"+i+"' type='number' readonly></td></tr>");
+                            /* 
+                                Make it so that investProperEquityN = investPropValueN - investPropDebtN
+                            */
+                            i++;
+                        } while (i <= n)
+                        $("#investPropList").show();
+                    }
+                  });
+                });
+                
+                // Show/hide elements depending on whether there's a felony conviction or not
+                $("input[value='felony']").on("click", function() {
+                    $(".felony").show(500);
+                });
+                $("input[value='nofelony']").on("click", function() {
+                    $(".felony").hide(500);
+                });
+                
+                // Show/hide elements depending on how they found out about us
+                $(".foundout").change(function(){
+                    $(this).find("option:selected").each(function(){
+                        if($(this).attr("value")=="foundoutbroker"){
+                            $(".foundoutbroker").show(500);
+                            $(".foundoutevent").hide(500);
+                            $(".foundoutother").hide(500);
+                        }
+                        else if($(this).attr("value")=="foundoutevent"){
+                            $(".foundoutbroker").hide(500);
+                            $(".foundoutevent").show(500);
+                            $(".foundoutother").hide(500);
+                        }
+                        else if($(this).attr("value")=="foundoutother"){
+                            $(".foundoutbroker").hide(500);
+                            $(".foundoutevent").hide(500);
+                            $(".foundoutother").show(500);
+                        }
+                    });
+                }).change();
+                
+                // Show/hide guarantor list if there is more the 1 guarantor
+                $('#guarantorCount').change(function() {
+                    /*
+                        This needs to be modified such that if you lower the number and then raise it again, data entered in a higher-numbered row is retained.  For example, if a borrower indicates there will be 4 guarantors, fills out the data, and then accidentally reduces the number, that filled-out data should remain.  This quick prototype version does not do that.
+                    */
+                    var n = $('#guarantorCount').val();
+                    $("#a").text(n);
+                    if (n < 2) {
+                        $("#guarantorList").hide(500);
+                        $(".addedGuarantor").remove();
+                    } else {
+                        $(".addedGuarantor").remove();
+                        var i = 2;
+                        do {
+                            $("#guarantorList tbody").append("<tr class='addedGuarantor'><td>"+i+"</td><td><input id='guarantorFirstName"+i+"' type='text'></td><td><input id='guarantorLastName"+i+"' type='text'></td><td><input id='guarantorEmail"+i+"' type='email'></td><td><input id='guarantorPhoneNumber"+i+"' type='tel'></td></tr>");
+                            i++;
+                        } while (i <= n)
+                        $("#guarantorList").show(500);
+                    }
+                });
+                
+                // Show/hide elements depending on whether borrower owns property or not
+                $("input[value='owned']").on("click", function() {
+                    $(".notinmind").hide(500);
+                    $(".notowned").hide(500);
+                    $(".owned").show(500);
+                    $("input[name='inmind']").prop('checked', false);
+                    $("input[name='sellOrHold']").prop('checked', false);
+                });
+                $("input[value='notowned']").on("click", function() {
+                    $(".notinmind").hide(500);
+                    $(".owned").hide(500);
+                    $(".notowned").show(500);
+                    $("input[name='inmind']").prop('checked', false);
+                    $("input[name='sellOrHold']").prop('checked', false);
+                });
+                
+                // Show/hide elements depending on whether borrower had property in mind or not
+                $("input[value='inmind']").on("click", function() {
+                    $(".notinmind").hide(500);
+                    $(".inmind").show(500);
+                    $(".inmindandnotinmind").show(500);
+                });
+                $("input[value='notinmind']").on("click", function() {
+                    $(".inmind").hide(500);
+                    $(".notinmind").show(500);
+                    $(".inmindandnotinmind").show(500);
+                });
+                
+                // Specific property location
+                $(".location").change(function(){
+                    $(this).find("option:selected").each(function(){
+                        if($(this).attr("value")=="us"){
+                            $(".us").show(500);
+                            $(".canada").hide(500);
+                            $(".otherlocation").hide(500);
+                        }
+                        else if($(this).attr("value")=="canada"){
+                            $(".us").hide(500);
+                            $(".canada").show(500);
+                            $(".otherlocation").hide(500);
+                        }
+                        else if($(this).attr("value")=="otherlocation"){
+                            $(".us").hide(500);
+                            $(".canada").hide(500);
+                            $(".otherlocation").show(500);
+                        }
+                    });
+                }).change();
+                
+                // Unspecific property location
+                $('#us').change(function(){
+                    if($(this).prop("checked")) {
+                        $('.uscheckbox').show(500);
+                    } else {
+                        $('.uscheckbox').hide(500);
+                    }
+                });
+                $('#canada').change(function(){
+                    if($(this).prop("checked")) {
+                        $('.canadacheckbox').show(500);
+                    } else {
+                        $('.canadacheckbox').hide(500);
+                    }
+                });
+                $('#otherlocation').change(function(){
+                    if($(this).prop("checked")) {
+                        $('.othercheckbox').show(500);
+                    } else {
+                        $('.othercheckbox').hide(500);
+                    }
+                });
+                
+                // Show/hide elements depending on whether budget is more than $0
+                $('#budget').on('change',function(){
+                    if (!$(this).val()) {
+                        $(this).val(0);
+                    }
+                    if ($(this).val() > 0 ) { 
+                        $("#draws").show(500);
+                    } else {
+                        $("#draws").hide(500);
+                    }
+                });
+                
+                // Show the proper timeline slider tool once the appropriate questions have been answered
+                $("input[name='ownedOrNot'], input[name='sellOrHold'], #drawcount").on('change', function(){
+                    
+                    // Show/hide timeline depending on whether there is sufficient data to display it
+                    if($("input[name='ownedOrNot']:checked").val() && $("input[name='sellOrHold']:checked").val() && $("#drawcount").val()) {
+                        $("#timeline").show(500);
+                    } else {
+                        $("#timeline").hide(500);
+                    }
+                    
+                    // Show/hide sliders and appropriate labels
+                    if($("input[name='ownedOrNot']:checked").val() == "owned") {
+                        if($("input[name='sellOrHold']:checked").val() == "Sell") {
+                            if($('#drawcount').val() == 0) {
+                                $("#timeline img").attr("src","img/owned_yes_draws_0_sell.png");
+                            } else if ($('#drawcount').val() == 1) {
+                                $("#timeline img").attr("src","img/owned_yes_draws_1_sell.png");
+                            } else {
+                                $("#timeline img").attr("src","img/owned_yes_draws_2_sell.png");
+                            }
+                        } else {
+                            if($('#drawcount').val() == 0) {
+                                $("#timeline img").attr("src","img/owned_yes_draws_0_hold.png");
+                            } else if ($('#drawcount').val() == 1) {
+                                $("#timeline img").attr("src","img/owned_yes_draws_1_hold.png");
+                            } else {
+                                $("#timeline img").attr("src","img/owned_yes_draws_2_hold.png");
+                            }
+                        }
+                    } else {
+                        if($("input[name='sellOrHold']:checked").val() == "Sell") {
+                            if($('#drawcount').val() == 0) {
+                                $("#timeline img").attr("src","img/owned_no_draws_0_sell.png");
+                            } else if ($('#drawcount').val() == 1) {
+                                $("#timeline img").attr("src","img/owned_no_draws_1_sell.png");
+                            } else {
+                                $("#timeline img").attr("src","img/owned_no_draws_2_sell.png");
+                            }
+                        } else {
+                            if($('#drawcount').val() == 0) {
+                                $("#timeline img").attr("src","img/owned_no_draws_0_hold.png");
+                            } else if ($('#drawcount').val() == 1) {
+                                $("#timeline img").attr("src","img/owned_no_draws_1_hold.png");
+                            } else {
+                                $("#timeline img").attr("src","img/owned_no_draws_2_hold.png");
+                            }
+                        }
+                    }
+                });
+            });
+        </script>
+    </head>
+    <body>
+        <form>
+            <div class="preparer">
+                <h1>Preparer</h1>
+                Who is filling out this application? 
+                <input type="radio" name="whoIsFillingOut" value="Borrower"> Borrower 
+                <input type="radio" name="whoIsFillingOut" value="Broker"> Broker
+            </div>
+            <div class="broker">
+                <h1>Broker</h1>
+                <input id="brokerFirstName" type="text" placeholder="First name">
+                <input id="brokerLastName" type="text" placeholder="Last name">
+                <input id="brokerEmail" type="email" placeholder="Email">
+                <input id="brokerPhoneNumber" type="tel" placeholder="Phone number">
+                <br><br>
+                <div>
+                    How should we communicate with the borrower?<br>
+                    <input type="radio" name="brokerCommunicationPreferece" value="brokerOnly"> Send all communications to me and I will communicate with the borrower directly.<br>
+                    <input type="radio" name="brokerCommunicationPreferece" value="brokerCCed"> Communicate directly with the borrower but keep me CCed on all important communications with the borrower.<br>
+                    <input type="radio" name="brokerCommunicationPreferece" value="borrowerOnly"> Communicate directly with the borrower but let me know when the loan is approved or rejected.
+                </div>
+            </div>
+            <div>
+                <h1>Borrower</h1>
+                <input id="borrowerFirstName" type="text" placeholder="First name">
+                <input id="borrowerLastName" type="text" placeholder="Last name">
+                <input id="borrowerEmail" type="email" placeholder="Email">
+                <input id="borrowerPhoneNumber" type="tel" placeholder="Phone number">
+                <br><br>
+                <div>
+                    How much cash <span class="borrower">do you</span><span class="broker">does the borrower</span> have in bank accounts?
+                    $<input type="number" min="0" value="0">
+                </div>
+                <div>
+                    How much <span class="borrower">do you</span><span class="broker">does the borrower</span> have in investment or retirement accounts?
+                    $<input type="number" min="0" value="0">
+                </div>
+                <div>
+                    <span class="borrower">Have you</span><span class="broker">Has the borrower</span> ever been convicted of a felony?
+                    <input type="radio" name="felony" value="felony"> Yes 
+                    <input type="radio" name="felony" value="nofelony"> No<br>
+                    <textarea class="felony" placeholder="Please explain your felony record." style="width:400px;"></textarea>
+                </div>
+                <br>
+                <div class="borrower">
+                    How did you find out about us?
+                    <select class="foundout">
+                        <option disabled selected>Choose…</option>
+                        <option value="foundoutbroker">Broker…</option>
+                        <option value="foundoutevent">Event or group…</option>
+                        <option value="foundoutother">Other…</option>
+                    </select>
+                    <select class="hidden foundoutevent">
+                        <option disabled selected>Choose…</option>
+                        <option>DIG</option>
+                        <option>IMN</option>
+                        <option>FICON</option>
+                        <option>Redevelop U</option>
+                        <option>W.H.I.P.</option>
+                    </select>
+                    <div class="hidden foundoutbroker">
+                        Please provide your broker's contact information:<br>
+                        <input type="text" placeholder="First name">
+                        <input type="text" placeholder="Last name">
+                        <input type="tel" placeholder="Phone number">
+                        <input type="email" placeholder="Email">
+                    </div>
+                    <input class="hidden foundoutother" type="text" placeholder="Please specify how you found out about us." style="width:400px;">
+                </div>
+            </div>
+            <div>
+                <h1>Guarantors</h1>
+                <div>
+                    How many guarantors will there be<span class="borrower">, including you</span>?
+                    <input id="guarantorCount" type="number" value="1" min="1" step="1">
+                    <div>
+                        <table id="guarantorList" class="hidden" style="margin-top: 1em;">
+                            <caption>Please provide the contact information for each guarantor.</caption>
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>First name</th>
+                                    <th>Last name</th>
+                                    <th>Email</th>
+                                    <th>Phone number</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <!--
+                                        The first row should be automatically populated with the borrower's information from the "Borrower" section (because the primary borrower needs to be a guarantor).
+                                    -->
+                                    <td>1</td>
+                                    <td id="guarantorFirstName1"></td>
+                                    <td id="guarantorLastName1"></td>
+                                    <td id="guarantorEmail1"></td>
+                                    <td id="guarantorPhoneNumber1"></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div>
+                <h1>Experience</h1>
+                <div>
+                    <textarea placeholder="Please describe your real estate experience." style="width:600px;"></textarea>
+                </div>
+                <div>
+                    How many investment properties <span class="borrower">have you</span><span class="broker">has the borrower</span> sold after doing construction work on them?
+                    <input type="number" min="0" step="1" value="0">
+                </div>
+                <div>
+                    How many investment properties <span class="borrower">have you</span><span class="broker">has the borrower</span> sold without doing construction work on them?
+                    <input type="number" min="0" step="1" value="0">
+                </div>
+                <div>
+                    How many investment properties <span class="borrower">do you</span><span class="broker">does the borrower</span> currently own?
+                    <input id="investPropCount" type="number" value="0" min="0" step="1">
+                    <table id="investPropList" class="hidden" style="margin-top: 1em;">
+                        <caption>Please describe your investment properties.</caption>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Type</th>
+                                <th>As-Is Value</th>
+                                <th>Debt</th>
+                                <th>Equity</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div>
+                <h1>Property</h1>
+                <div>
+                    <div>
+                        <span class="borrower">Do you</span><span class="broker">Does the borrower</span> already own the investment property <span class="borrower">you are</span><span class="broker">the borrower is</span> seeking financing for? 
+                        <input type="radio" name="ownedOrNot" value="owned"> Yes 
+                        <input type="radio" name="ownedOrNot" value="notowned"> No
+                    </div>
+                </div>
+                <div class="hidden notowned">
+                    <span class="borrower">Do you</span><span class="broker">Does the borrower</span> already have a particular investment property in mind? 
+                    <input type="radio" name="inmind" value="inmind"> Yes 
+                    <input type="radio" name="inmind" value="notinmind"> No
+                </div>
+                <div class="hidden owned inmind">
+                    Where is the property located? 
+                    <select class="location">
+                        <option value="us">United States</option>
+                        <option value="canada">Canada</option>
+                        <option value="otherlocation">Other…</option>
+                    </select>
+                    <select class="us">
+                        <option disabled selected>Choose a state…</option>
+                        <option>Alabama</option>
+                        <option>Alaska</option>
+                        <option>American Samoa</option>
+                        <option>Arizona</option>
+                        <option>Arkansas</option>
+                        <option>California</option>
+                        <option>Colorado</option>
+                        <option>Connecticut</option>
+                        <option>Delaware</option>
+                        <option>District of Columbia</option>
+                        <option>Florida</option>
+                        <option>Georgia</option>
+                        <option>Guam</option>
+                        <option>Hawaii</option>
+                        <option>Idaho</option>
+                        <option>Illinois</option>
+                        <option>Indiana</option>
+                        <option>Iowa</option>
+                        <option>Kansas</option>
+                        <option>Kentucky</option>
+                        <option>Louisiana</option>
+                        <option>Maine</option>
+                        <option>Maryland</option>
+                        <option>Massachusetts</option>
+                        <option>Michigan</option>
+                        <option>Minnesota</option>
+                        <option>Mississippi</option>
+                        <option>Missouri</option>
+                        <option>Montana</option>
+                        <option>Nebraska</option>
+                        <option>Nevada</option>
+                        <option>New Hampshire</option>
+                        <option>New Jersey</option>
+                        <option>New Mexico</option>
+                        <option>New York</option>
+                        <option>North Carolina</option>
+                        <option>North Dakota</option>
+                        <option>Northern Marianas Islands</option>
+                        <option>Ohio</option>
+                        <option>Oklahoma</option>
+                        <option>Oregon</option>
+                        <option>Pennsylvania</option>
+                        <option>Puerto Rico</option>
+                        <option>Rhode Island</option>
+                        <option>South Carolina</option>
+                        <option>South Dakota</option>
+                        <option>Tennessee</option>
+                        <option>Texas</option>
+                        <option>Utah</option>
+                        <option>Vermont</option>
+                        <option>Virgin Islands</option>
+                        <option>Virginia</option>
+                        <option>Washington</option>
+                        <option>West Virginia</option>
+                        <option>Wisconsin</option>
+                        <option>Wyoming</option>
+                    </select>
+                    <select class="canada">
+                        <option disabled selected>Choose a province…</option>
+                        <option>Alberta</option>
+                        <option>British Columbia</option>
+                        <option>Manitoba</option>
+                        <option>New Brunswick</option>
+                        <option>Newfoundland and Labrador</option>
+                        <option>Northwest Territories</option>
+                        <option>Nova Scotia</option>
+                        <option>Nunavut</option>
+                        <option>Ontario</option>
+                        <option>Prince Edward Island</option>
+                        <option>Quebec</option>
+                        <option>Saskatchewan</option>
+                        <option>Yukon Territory</option>
+                    </select>
+                    <input class="otherlocation" type="text" placeholder="Please specify the location." style="width:200px;">
+                </div>
+                <div class="hidden notinmind">
+                    Where <span class="borrower">are you</span><span class="broker">is the borrower</span> looking to invest? Select all that apply.<br />
+                    <div>
+                        <hr>
+                        <input type="checkbox" id="us" checked> United States
+                        <input type="checkbox" id="canada"> Canada
+                        <input type="checkbox" id="otherlocation"> Other
+                    </div>
+                    <div class="uscheckbox">
+                        <hr>
+                        <input type='checkbox'> Alabama
+                        <input type='checkbox'> Alaska
+                        <input type='checkbox'> American Samoa
+                        <input type='checkbox'> Arizona
+                        <input type='checkbox'> Arkansas
+                        <input type='checkbox'> California
+                        <input type='checkbox'> Colorado
+                        <input type='checkbox'> Connecticut
+                        <input type='checkbox'> Delaware
+                        <input type='checkbox'> District of Columbia
+                        <input type='checkbox'> Florida
+                        <input type='checkbox'> Georgia
+                        <input type='checkbox'> Guam
+                        <input type='checkbox'> Hawaii
+                        <input type='checkbox'> Idaho
+                        <input type='checkbox'> Illinois
+                        <input type='checkbox'> Indiana
+                        <input type='checkbox'> Iowa
+                        <input type='checkbox'> Kansas
+                        <input type='checkbox'> Kentucky
+                        <input type='checkbox'> Louisiana
+                        <input type='checkbox'> Maine
+                        <input type='checkbox'> Maryland
+                        <input type='checkbox'> Massachusetts
+                        <input type='checkbox'> Michigan
+                        <input type='checkbox'> Minnesota
+                        <input type='checkbox'> Mississippi
+                        <input type='checkbox'> Missouri
+                        <input type='checkbox'> Montana
+                        <input type='checkbox'> Nebraska
+                        <input type='checkbox'> Nevada
+                        <input type='checkbox'> New Hampshire
+                        <input type='checkbox'> New Jersey
+                        <input type='checkbox'> New Mexico
+                        <input type='checkbox'> New York
+                        <input type='checkbox'> North Carolina
+                        <input type='checkbox'> North Dakota
+                        <input type='checkbox'> Northern Marianas Islands
+                        <input type='checkbox'> Ohio
+                        <input type='checkbox'> Oklahoma
+                        <input type='checkbox'> Oregon
+                        <input type='checkbox'> Pennsylvania
+                        <input type='checkbox'> Puerto Rico
+                        <input type='checkbox'> Rhode Island
+                        <input type='checkbox'> South Carolina
+                        <input type='checkbox'> South Dakota
+                        <input type='checkbox'> Tennessee
+                        <input type='checkbox'> Texas
+                        <input type='checkbox'> Utah
+                        <input type='checkbox'> Vermont
+                        <input type='checkbox'> Virgin Islands
+                        <input type='checkbox'> Virginia
+                        <input type='checkbox'> Washington
+                        <input type='checkbox'> West Virginia
+                        <input type='checkbox'> Wisconsin
+                        <input type='checkbox'> Wyoming
+                    </div>
+                    <div class="hidden canadacheckbox">
+                        <hr>
+                        <input type='checkbox'> Alberta
+                        <input type='checkbox'> British Columbia
+                        <input type='checkbox'> Manitoba
+                        <input type='checkbox'> New Brunswick
+                        <input type='checkbox'> Newfoundland and Labrador
+                        <input type='checkbox'> Northwest Territories
+                        <input type='checkbox'> Nova Scotia
+                        <input type='checkbox'> Nunavut
+                        <input type='checkbox'> Ontario
+                        <input type='checkbox'> Prince Edward Island
+                        <input type='checkbox'> Quebec
+                        <input type='checkbox'> Saskatchewan
+                        <input type='checkbox'> Yukon Territory
+                    </div>
+                    <div class="hidden othercheckbox">
+                        <hr>
+                        <input type="text" placeholder="Please specify the location." style="width:200px;">
+                    </div>
+                    <hr>
+                </div>
+                <div class="hidden owned">
+                    When did <span class="borrower">you</span><span class="broker">the borrower</span> buy the property?
+                    <select id="year" name="year">
+                        <script>
+                            var myDate = new Date();
+                            var year = myDate.getFullYear();
+                            var yearsBack = 5;
+                            for(var i = year; i >= year-yearsBack; i--){
+                                if (i == year-yearsBack){
+                                    document.write('<option value="'+i+'">'+i+' or earlier</option>');
+                                } else {
+                                    document.write('<option value="'+i+'">'+i+'</option>');
+                                }
+                            }
+                        </script>
+                    </select>
+                    <select class="month">
+                        <!--
+                            If current year is selected && current month = January:
+                                January is auto selected as a single-option select element.
+                                Else: Only current month and less are shown in select element with "Choose a month…".
+                            Else if "or earlier" year is selected, hide .month select element.
+                            Else all 12 months are shown
+                        -->
+                        <option disabled selected>Choose a month…</option>
+                        <option>January</option>
+                        <option>February</option>
+                        <option>March</option>
+                        <option>April</option>
+                        <option>May</option>
+                        <option>June</option>
+                        <option>July</option>
+                        <option>August</option>
+                        <option>September</option>
+                        <option>October</option>
+                        <option>November</option>
+                        <option>December</option>
+                    </select>
+                </div>
+                <div class="hidden owned inmindandnotinmind">
+                    <!-- If the property is owned but was bought in the last 6 months, use purchase price instead of present value -->
+                    What is <span class="hidden owned">the property worth right now</span><span class="hidden notowned"><span class="hidden inmind">the property's</span><span class="hidden notinmind"><span class="borrower">your</span><span class="broker">the borrower's</span> typical </span> purchase price</span>?
+                    $<input type="number" min="0">
+                </div>
+                <div class="hidden owned inmindandnotinmind">
+                    What is <span class="hidden owned inmind">the property's</span><span class="notinmind"><span class="borrower">your</span><span class="broker">the borrower's</span> typical</span> construction budget?
+                    $<input id="budget" type="number" min="0" value="0">
+                    <div id="draws">
+                        How many construction draws will <span class="borrower">you</span><span class="broker">the borrower</span> <span class="hidden notinmind">typically</span> request?
+                        <input id="drawcount" type="number" min="0" step="1" value="0">
+                    </div>
+                </div>
+                <div class="hidden owned inmind">
+                    What is <span class="hidden owned inmind">the property's</span><span class="notinmind"><span class="borrower">your</span><span class="broker">the borrower's</span> typical </span> after-repair value (ARV)?
+                    $<input type="number" min="0">
+                </div>
+                <div class="hidden owned inmindandnotinmind">
+                    Will <span class="borrower">you</span><span class="broker">the borrower</span> <span class="hidden notinmind">typically</span> sell or hold the property?
+                    <input type="radio" name="sellOrHold" value="Sell"> Sell 
+                    <input type="radio" name="sellOrHold" value="Hold"> Hold
+                </div>
+                <div id="timeline">
+                    What is <span class="hidden owned inmind">the project's</span><span class="notinmind"><span class="borrower">your</span><span class="broker">the borrower's</span> typical</span> timeline? Please drag the sliders to specify.
+                    <br>
+                    <br>
+                    <img>
+                    <br>
+                </div>
+            </div>
+        </form>
+    </body>
+</html>
