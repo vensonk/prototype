@@ -113,6 +113,8 @@
                 $('#guarantorCount').change(function() {
                     /*
                         This needs to be modified such that if you lower the number and then raise it again, data entered in a higher-numbered row is retained.  For example, if a borrower indicates there will be 4 guarantors, fills out the data, and then accidentally reduces the number, that filled-out data should remain.  This quick prototype version does not do that.
+                        
+                        In addition, we need to figure out a way to effectively merge multiple guarnators who are backing one borrower so that we are looking at their financials collectively.  The personal finacial statement allows doing this for up to 3, and for any more we have been doing it manually and ad hoc.f
                     */
                     var n = $('#guarantorCount').val();
                     $("#a").text(n);
