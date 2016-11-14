@@ -1,0 +1,33 @@
+/* TEMP */
+.hidden {
+	display: block !important;
+}
+span.hidden {
+	display: inline !important;
+}
+
+body {
+	background-color: #eee;
+}
+.panel {
+	border: 1px solid #eaeaea;
+	border-bottom-color: #d9e0e0;
+	box-shadow: 0px 1px 1px rgba(0,0,0,0.07);
+	background: #fff;
+	padding: 30px;
+	border-radius: 4px;
+}
+.panel h3 {
+	margin-top: 10px;
+}
+.required {
+	color: red;
+}
+/*
+.broker {
+	display: none;
+}
+*/
+#guarantorsList {
+	margin-top: 10px;
+}
